@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  },
+  "name": "merkletree-sample-project",
+  "scripts": {
+    "dev": "lerna run dev --stream --parallel"
+  },
+  "workspaces": [
+    "packages/contract",
+    "packages/backend",
+    "packages/react"
+  ]
+}

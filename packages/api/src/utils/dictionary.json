@@ -1,0 +1,12 @@
+{
+  "WALLETS": {
+    "ERROR": {
+      "CREATE": {
+        "DUPLICATE": "Duplicate wallet."
+      },
+      "READ": {
+        "NOT_FOUND": "Wallet not found."
+      }
+    }
+  }
+}
