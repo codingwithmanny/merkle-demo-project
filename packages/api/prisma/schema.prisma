@@ -10,20 +10,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id         String    @id @default(uuid())
-  providerId String    @unique()
-  name       String
-  display    String?   @unique()
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now())
-  account    Account[]
-}
-
-model Account {
+model Wallet {
   id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  address   String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }

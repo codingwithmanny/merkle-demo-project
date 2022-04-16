@@ -9,7 +9,7 @@
   },
   "workspaces": [
     "packages/contract",
-    "packages/backend",
+    "packages/api",
     "packages/react"
   ]
 }

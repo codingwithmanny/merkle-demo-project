@@ -16,7 +16,7 @@ const VerifyMerkle = async (req: Request, res: Response) => {
   const wallets = await QUERY_WALLETS_ALL();
 
   const verify = verifyMerkleProof(
-    wallets.map((i) => i.address),
+    wallets.map((i: any) => i.address),
     req.body.proof,
     req.body.address,
     req.body.root,

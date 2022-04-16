@@ -5,7 +5,6 @@ import { body } from 'express-validator';
 import { buildSuccessResponse, generateMerkleTree } from '../../utils/helpers';
 import { QUERY_WALLETS_ALL } from '../wallets/queries';
 import Validator from '../../middlewares/validator';
-import { CREATE_MERKLE } from './queries';
 
 // Config
 // ========================================================
@@ -17,7 +16,7 @@ const CreateMerkle = async (req: Request, res: Response) => {
   const wallets = await QUERY_WALLETS_ALL();
 
   const { tree, root, proof } = generateMerkleTree(
-    wallets.map((i) => i.address),
+    wallets.map((i: any) => i.address),
     req.body.address,
   );
 

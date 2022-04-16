@@ -1,7 +1,13 @@
 // Imports
 // ========================================================
 import React, { useState } from 'react';
-import { useConnect, useAccount, useNetwork, useSignMessage } from 'wagmi';
+import { useConnect, useAccount, useContract, useSigner, useNetwork } from 'wagmi';
+import ContractABI from './abi/contracts/MyGreeter.sol/MyGreeter.json';
+
+// Constants
+// ========================================================
+const CONTRACT_ADDRESS = `${import.meta.env.VITE_CONTRACT_ADDRESS}`;
+const SUPPORTED_NETWORK = `${import.meta.env.VITE_SUPPORTED_CHAIN}`;
 
 // Styles
 // ========================================================
@@ -57,19 +63,25 @@ const App = () => {
   const [state, setState] = useState({
     wallet: '',
     proof: '',
-    root: ''
+    root: '',
+    message: ''
   });
   const [debug, setDebug] = useState<any>();
 
-  // Functions
-  const getMerkleProof = async () => {
-    try {
-      const result = await fetch(`${apiUrl}/merkle`)
-    } catch (error) {
-      console.log({ error });
-    }
-  }
+  const [{ data: signerData }] = useSigner();
+  const [{ data: networkData }, _switchNetwork] =
+    useNetwork();
 
+  const contract = useContract({
+    addressOrName: `${CONTRACT_ADDRESS}`,
+    contractInterface: ContractABI,
+    signerOrProvider: signerData,
+  });
+
+  const isSupportedNetwork = !networkData?.chain?.unsupported &&
+    networkData?.chain?.name === SUPPORTED_NETWORK;
+
+  // Functions
   /**
    * 
    * @param event 
@@ -181,13 +193,60 @@ const App = () => {
     })
   }
 
+  /**
+   * 
+   * @param event 
+   */
+  const onSubmitFormSetRootHash = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(state.root);
+
+    try {
+      const tx = await contract.setRootHash(state.root);
+      const result = await tx.wait();
+      setDebug(result?.transactionHash);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  /**
+   * 
+   * @param event 
+   */
+  const onSubmitFormSetGreeting = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log(state.root);
+
+    try {
+      const tx = await contract.setGreeting(state.message, JSON.parse(state.proof));
+      const result = await tx.wait();
+      setDebug(result?.transactionHash);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
+
+  const onClickGetGreeting = async () => {
+    try {
+      const greeting = await contract.greet();
+      setDebug({
+        greeting
+      })
+    } catch (error) {
+      console.log({ error });
+    }
+  }
+
   // Render / UI
   return (
     <main className={styles.main}>
       <div className={styles.card}>
         <div className="flex">
           <div className='w-1/2 pr-4'>
-            <h1 className="text-2xl font-semibold text-slate-800 mb-8">Merkle Tree Example</h1>
+            <h1 className="text-2xl font-semibold text-slate-800 mb-2">Merkle Tree Example</h1>
+            <p className={styles.p}>CONTRACT: {CONTRACT_ADDRESS}</p>
+            <p className={styles.p}>NETWORK: {SUPPORTED_NETWORK}</p>
 
             <div className="block mb-8">
               <p className={styles.p}>Add To White List</p>
@@ -262,12 +321,48 @@ const App = () => {
             </div> : null}
 
             {accountData ? <div>
+              <p className={styles.psmall}><small>Connected Network: {networkData.chain?.name}</small></p>
               <p className={styles.psmall}><small>Connected With Wallet</small></p>
               <pre title={accountData?.address} className={styles.pre}>
                 <code>{accountData?.address}</code>
               </pre>
-              <button className={`${styles.button} ${getButtonStyles()}`}>Get Merkle Proof</button>
+
+              {!isSupportedNetwork
+                ? <div className={styles.errors}>PLEASE SWITCH TO NETWORK: Localhost</div>
+                : <div>
+                  <div className="block mb-8">
+                    <p className={styles.p}>Set Root Hash</p>
+                    <form onSubmit={onSubmitFormSetRootHash}>
+                      <div>
+                        <label className={styles.label}>Root</label>
+                        <input className={styles.input} type="text" value={state.root} onChange={onChangeInput('root')} placeholder="0x01..." />
+                      </div>
+                      <div>
+                        <button type='submit' className={`${styles.button} ${getButtonStyles()}`}>Submit</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="block mb-8">
+                    <p className={styles.p}>Set Greeting</p>
+                    <form onSubmit={onSubmitFormSetGreeting}>
+                      <div>
+                        <label className={styles.label}>Message</label>
+                        <input className={styles.input} type="text" value={state.message} onChange={onChangeInput('message')} placeholder="Your message" />
+                      </div>
+                      <div>
+                        <button type='submit' className={`${styles.button} ${getButtonStyles()}`}>Submit</button>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div className="block mb-8">
+                    <p className={styles.p}>Get Greeting</p>
+                    <button onClick={onClickGetGreeting} className={`${styles.button} ${getButtonStyles()}`}>Get Greeting</button>
+                  </div>
+                </div>}
             </div> : null}
+
 
             <hr className="mb-4" />
           </div>

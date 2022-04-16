@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  nodetsdb:
-    container_name: nodetsdb
+  merkledb:
+    container_name: merkledb
     image: postgres:12
     restart: always
     environment:
@@ -14,7 +14,7 @@ services:
     expose:
       - '5432'
     networks:
-      - nodetsnet
+      - merklenet
 
 networks:
-  nodetsnet:
+  merklenet:
